@@ -17,7 +17,49 @@ class QuestionsModel extends BaseModel {
         return $data->fetch_all(MYSQL_ASSOC);
     }
 
-    public function getByIdWithAnswer($id){
+    public function getMaxCount(){
+        $data = self::$db->query("SELECT COUNT(q.Id) as maxCount
+                                FROM questions q
+                                left join categories c on q.Category=c.Id
+                                left join users u on q.User=u.Id
+                                ORDER BY Date DESC"
+        );
+        return $data->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function getAllWithPage($from, $pageSize){
+        $statement = self::$db->prepare("SELECT
+                                    q.Id,
+                                    q.Title,
+                                    q.Date,
+                                    q.Counter,
+                                    c.Title as Category,
+                                    u.Username
+                                FROM questions q
+                                left join categories c on q.Category=c.Id
+                                left join users u on q.User=u.Id
+                                ORDER BY Date DESC
+                                LIMIT ?, ?"
+        );
+        $statement->bind_param('ii', $from, $pageSize);
+        $statement->execute();
+        return $statement->get_result()->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function getMaxCountAnswer($id){
+        $data = self::$db->prepare("SELECT COUNT(a.Id) as maxCount
+                                FROM questions q
+                                left join categories c on q.Category=c.Id
+                                left join users u on q.User=u.Id
+                                left join answers a on a.Question = q.Id
+                                where q.id = ?"
+        );
+        $data->bind_param('i', $id);
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function getByIdWithAnswer($id, $from, $pageSize){
 
         $updateStatement = self::$db->prepare(
             "Update questions Set Counter = Counter + 1 Where Id = ?");
@@ -42,8 +84,9 @@ class QuestionsModel extends BaseModel {
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
             left join answers a on a.Question = q.Id
-            where q.id = ?");
-        $questionStatement->bind_param("i", $id);
+            where q.id = ?
+            LIMIT ?, ?");
+        $questionStatement->bind_param("iii", $id, $from, $pageSize);
         $questionStatement->execute();
         $dataWithTags = $questionStatement->get_result()->fetch_all(MYSQL_ASSOC);
 

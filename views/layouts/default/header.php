@@ -25,9 +25,9 @@
                     <ul id="menu" class="nav navbar-nav navbar-right">
                         <li><a href="/">Home</a></li>
                         <li><a href="/questions">Questions</a></li>
-                        <li><a href="/category">Category</a></li>
+                        <li><a href="/categories">Category</a></li>
                         <?php if(isset($_SESSION['username'])) : ?>
-                            <li><span id="username" class="btn btn-primary disabled"><?= htmlspecialchars($_SESSION['username']) ?></span></li>
+                            <li><a href="/accounts/edit" class="btn btn-primary"><?= htmlspecialchars($_SESSION['username']) ?></a></li>
                             <li><a href="/accounts/logout">Logout</a></li>
                         <?php else : ?>
                             <li><a class="btn-danger" href="/accounts/login">Login</a></li>

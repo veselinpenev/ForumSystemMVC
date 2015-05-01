@@ -13,15 +13,55 @@ class QuestionsController extends BaseController{
         $this->db = new QuestionsModel();
     }
 
-    public function index() {
-        $this->questions = $this->db->getAll();
+    public function index($page = 1, $pageSize = 5) {
+        $this->page = $page;
+        $this->pageSize = $pageSize;
+        $page = $page-1;
+        $all = $this->db->getMaxCount();
+        $maxCount = $all[0]['maxCount'];
+        $maxPage = floor($maxCount/$pageSize);
+        if($maxCount%$pageSize>0){
+            $maxPage++;
+        }
+        $from = $page * $pageSize;
+        if($page > $maxPage){
+            $page=$maxPage;
+        }
+        if($page < 0){
+            $page = 0;
+        }
+        $this->maxPage=$maxPage;
+
+        $this->questions = $this->db->getAllWithPage($from, $pageSize);
         $this->renderView();
     }
 
-    public function view($id) {
-        $this->questionWithAnswers = $this->db->getByIdWithAnswer($id);
+    public function view($questionId, $page = 1, $pageSize = 5) {
+        $this->page = $page;
+        $this->pageSize = $pageSize;
+        $this->questionId = $questionId;
+        $page = $page-1;
+        $all = $this->db->getMaxCountAnswer($questionId);
+        $maxCount = $all[0]['maxCount'];
+        $maxPage = floor($maxCount/$pageSize);
+        if($maxCount%$pageSize>0){
+            $maxPage++;
+        }
+        $from = $page * $pageSize;
+        if($page > $maxPage){
+            $page=$maxPage;
+        }
+        if($page < 0){
+            $page = 0;
+        }
+        $this->maxPage=$maxPage;
+
+
+        $this->questionWithAnswers = $this->db->getByIdWithAnswer($questionId, $from, $pageSize);
         $this->renderView(__FUNCTION__);
     }
+
+
 
     public function add() {
         $this->authorize();

@@ -36,4 +36,46 @@ class AccountsModel extends BaseModel {
 
         return false;
     }
+
+    public function editProfile($username, $fullName, $email){
+        $statement = self::$db->prepare("UPDATE users SET FullName= ?, Email = ? WHERE Username = ?");
+        $statement->bind_param("sss", $fullName, $email, $username);
+        $statement->execute();
+        $result = $statement->affected_rows;
+        if($result > 0){
+            return true;
+        }
+        return false;
+    }
+
+    public function editPassword($username, $oldPassword, $newPassword){
+        $statement = self::$db->prepare("SELECT Password FROM users WHERE Username =  ?");
+        $statement->bind_param("s", $username);
+        $statement->execute();
+        $result = $statement->get_result()->fetch_assoc();
+        if(password_verify($oldPassword, $result['Password'])){
+            $pass_hash = password_hash($newPassword, PASSWORD_BCRYPT);
+            $editStatement = self::$db->prepare("UPDATE users SET Password= ? WHERE Username = ?");
+            $editStatement->bind_param("ss", $pass_hash, $username);
+            $editStatement->execute();
+            $resultEdit = $editStatement->affected_rows;
+            if($resultEdit > 0){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function getInfo($username){
+        $statement = self::$db->prepare("Select Id, Username, Email, FullName from users WHERE Username =  ?");
+        $statement->bind_param("s", $username);
+        $statement->execute();
+        $result = $statement->get_result()->fetch_assoc();
+
+        if($result['Id'] == 0){
+            return false;
+        }
+
+        return $result;
+    }
 }

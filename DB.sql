@@ -7,7 +7,7 @@ CREATE TABLE users(
 	Username VARCHAR(50) NOT NULL UNIQUE,
 	Password CHAR(100) NOT NULL,
 	Email VARCHAR(70),
-	FullName VARCHAR(100) NOT NULL,
+	FullName VARCHAR(100),
     IsAdmin BOOL
 );
 
