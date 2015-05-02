@@ -35,3 +35,14 @@ body header img {
 body main img {
     width: 500px;
 }
+
+.questionMarginLeft{
+    margin-left: 20px;
+}
+.list-group-item:hover{
+    background: #c0c0c0;
+}
+
+.searchBtnMargin{
+    margin:5px;
+}

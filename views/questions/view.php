@@ -10,8 +10,8 @@
                 </div>
                 <div class="panel-body">
                     <div class="row">
-                        <div class="col-md-2 "><span class="text-primary">User: </span> <?= htmlspecialchars($this->questionWithAnswers[0]['Username']) ?></div>
-                        <div class="col-md-8"><span class="text-primary">Category: </span> <?= htmlspecialchars($this->questionWithAnswers[0]['Category']) ?></div>
+                        <div class="col-md-3 "><span class="text-primary">User: </span> <?= htmlspecialchars($this->questionWithAnswers[0]['Username']) ?> &#9733;(<?= htmlspecialchars($this->questionWithAnswers[0]['UserRating']) ?>)</div>
+                        <div class="col-md-7"><span class="text-primary">Category: </span> <?= htmlspecialchars($this->questionWithAnswers[0]['Category']) ?></div>
                         <div class="col-md-2 text-right"><span class="text-primary">Visits: </span> <?= htmlspecialchars($this->questionWithAnswers[0]['Counter']) ?></div>
                     </div>
                     <div class="row">

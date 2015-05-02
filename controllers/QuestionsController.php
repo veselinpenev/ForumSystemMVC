@@ -8,16 +8,20 @@
 
 class QuestionsController extends BaseController{
     private $db;
+    private $dbCategories;
     public function onInit(){
         $this->title = "Questions";
         $this->db = new QuestionsModel();
+        $this->dbCategories = new CategoriesModel();
     }
 
-    public function index($page = 1, $pageSize = 5) {
+    public function index($page = 1, $pageSize = 5, $category = '') {
         $this->page = $page;
         $this->pageSize = $pageSize;
+        $this->setCategory = $category;
         $page = $page-1;
-        $all = $this->db->getMaxCount();
+        $category = '%' . urldecode($category) . '%';
+        $all = $this->db->getMaxCount($category);
         $maxCount = $all[0]['maxCount'];
         $maxPage = floor($maxCount/$pageSize);
         if($maxCount%$pageSize>0){
@@ -32,7 +36,9 @@ class QuestionsController extends BaseController{
         }
         $this->maxPage=$maxPage;
 
-        $this->questions = $this->db->getAllWithPage($from, $pageSize);
+        $this->categories = $this->dbCategories->getAll();
+
+        $this->questions = $this->db->getAllWithPageAndCategory($from, $pageSize, $category);
         $this->renderView();
     }
 
@@ -83,5 +89,23 @@ class QuestionsController extends BaseController{
             $this->TagsAndCategories = $this->db->getAllTagsAndCategories();
             $this->renderView(__FUNCTION__);
         }
+    }
+
+    public function search() {
+        if($this->isPost){
+            $searchWord = $_POST['searchWord'];
+            $searchWord = '%' . $searchWord . '%';
+            $this->searchByQuestion = $this->db->searchByQuestion($searchWord);
+
+            $this->searchByAnswer= $this->db->searchByAnswer($searchWord);
+            $this->searchByTag = $this->db->searchByTag($searchWord);
+        }
+
+        $this->renderView(__FUNCTION__);
+    }
+
+    public function ranking() {
+        $this->ranking = $this->db->ranking();
+        $this->renderView(__FUNCTION__);
     }
 }

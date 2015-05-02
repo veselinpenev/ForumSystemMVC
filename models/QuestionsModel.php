@@ -2,58 +2,63 @@
 
 class QuestionsModel extends BaseModel {
     public function getAll(){
-        $data = self::$db->query("SELECT
-                                    q.Id,
-                                    q.Title,
-                                    q.Date,
-                                    q.Counter,
-                                    c.Title as Category,
-                                    u.Username
-                                FROM questions q
-                                left join categories c on q.Category=c.Id
-                                left join users u on q.User=u.Id
-                                ORDER BY Date DESC"
-        );
+        $data = self::$db->query(
+            "SELECT
+                q.Id,
+                q.Title,
+                q.Date,
+                q.Counter,
+                c.Title as Category,
+                u.Username
+            FROM questions q
+            left join categories c on q.Category=c.Id
+            left join users u on q.User=u.Id
+            ORDER BY Date DESC");
         return $data->fetch_all(MYSQL_ASSOC);
     }
 
-    public function getMaxCount(){
-        $data = self::$db->query("SELECT COUNT(q.Id) as maxCount
-                                FROM questions q
-                                left join categories c on q.Category=c.Id
-                                left join users u on q.User=u.Id
-                                ORDER BY Date DESC"
-        );
-        return $data->fetch_all(MYSQL_ASSOC);
+    public function getMaxCount($category){
+        $data = self::$db->prepare(
+            "SELECT COUNT(q.Id) as maxCount
+            FROM questions q
+            left join categories c on q.Category=c.Id
+            left join users u on q.User=u.Id
+            WHERE c.Title LIKE ?
+            ORDER BY Date DESC");
+        $data->bind_param('s', $category);
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
     }
 
-    public function getAllWithPage($from, $pageSize){
-        $statement = self::$db->prepare("SELECT
-                                    q.Id,
-                                    q.Title,
-                                    q.Date,
-                                    q.Counter,
-                                    c.Title as Category,
-                                    u.Username
-                                FROM questions q
-                                left join categories c on q.Category=c.Id
-                                left join users u on q.User=u.Id
-                                ORDER BY Date DESC
-                                LIMIT ?, ?"
-        );
-        $statement->bind_param('ii', $from, $pageSize);
+    public function getAllWithPageAndCategory($from, $pageSize, $category){
+        $statement = self::$db->prepare(
+            "SELECT
+                q.Id,
+                q.Title,
+                q.Date,
+                q.Counter,
+                c.Title as Category,
+                u.Username,
+                (SELECT COUNT(qu.Id) FROM users us JOIN questions qu ON us.Id = qu.User Where us.Id = u.Id) as UserRating
+            FROM questions q
+            left join categories c on q.Category=c.Id
+            left join users u on q.User=u.Id
+            WHERE c.Title LIKE ?
+            ORDER BY Date DESC
+            LIMIT ?, ?");
+        $statement->bind_param('sii', $category,$from, $pageSize);
         $statement->execute();
         return $statement->get_result()->fetch_all(MYSQL_ASSOC);
     }
 
     public function getMaxCountAnswer($id){
-        $data = self::$db->prepare("SELECT COUNT(a.Id) as maxCount
-                                FROM questions q
-                                left join categories c on q.Category=c.Id
-                                left join users u on q.User=u.Id
-                                left join answers a on a.Question = q.Id
-                                where q.id = ?"
-        );
+        $data = self::$db->prepare(
+            "SELECT COUNT(a.Id) as maxCount
+            FROM questions q
+            left join categories c on q.Category=c.Id
+            left join users u on q.User=u.Id
+            left join answers a on a.Question = q.Id
+            where q.id = ?");
         $data->bind_param('i', $id);
         $data->execute();
         return $data->get_result()->fetch_all(MYSQL_ASSOC);
@@ -79,7 +84,8 @@ class QuestionsModel extends BaseModel {
                 a.Content as AnswerContent,
                 a.Date as AnswerDate,
                 a.AuthorName as AnswerAuthor,
-                a.AuthorEmail as AnswerAuthorEmail
+                a.AuthorEmail as AnswerAuthorEmail,
+                (SELECT COUNT(qu.Id) FROM users us JOIN questions qu ON us.Id = qu.User Where us.Id = u.Id) as UserRating
             FROM questions q
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
@@ -128,8 +134,8 @@ class QuestionsModel extends BaseModel {
         $user = $userStatement->get_result()->fetch_all(MYSQL_ASSOC);
         $userId = $user[0]['Id'];
 
-        $questionStatement = self::$db->prepare("
-            INSERT INTO questions (Title, Content, Date, Counter, Category, User)
+        $questionStatement = self::$db->prepare(
+            "INSERT INTO questions (Title, Content, Date, Counter, Category, User)
             VALUES (?, ?, NOW(), ? ,? ,?)");
         $questionStatement->bind_param("ssiii", $title, $content, $c = 0, $categoryId, $userId);
         $questionStatement->execute();
@@ -137,8 +143,8 @@ class QuestionsModel extends BaseModel {
 
         if($questionId > 0){
             foreach ($tags as $tag) {
-                $questionStatement = self::$db->prepare("
-                    INSERT INTO questions_tags (questionId, tagId)
+                $questionStatement = self::$db->prepare(
+                    "INSERT INTO questions_tags (questionId, tagId)
                     VALUES (?,?)");
                 $questionStatement->bind_param("ii", $questionId, $tag);
                 $questionStatement->execute();
@@ -149,6 +155,58 @@ class QuestionsModel extends BaseModel {
         }
 
         return $questionId;
+    }
 
+    public function searchByQuestion($searchWord){
+        $data = self::$db->prepare(
+            "SELECT
+                q.Id,
+                q.Title
+            FROM questions q
+            WHERE q.Title LIKE ? OR q.Content LIKE ?
+            ORDER BY Date DESC");
+        $data->bind_param('ss', $searchWord, $searchWord);
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function searchByAnswer($searchWord){
+        $data = self::$db->prepare(
+            "SELECT
+                distinct q.Id,
+                q.Title
+            FROM questions q
+            JOIN answers a on a.Question = q.Id
+            WHERE a.Content LIKE ?
+            ORDER BY q.Date DESC");
+        $data->bind_param('s', $searchWord);
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function searchByTag($searchWord){
+        $data = self::$db->prepare(
+            "SELECT
+                distinct q.Id,
+                q.Title
+            FROM questions q
+            JOIN questions_tags qt on q.Id = qt.questionId
+            JOIN tags t on qt.tagId = t.Id
+            WHERE t.Title LIKE ?
+            ORDER BY Date DESC");
+        $data->bind_param('s', $searchWord);
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+    }
+
+    public function ranking(){
+        $data = self::$db->prepare(
+            "SELECT Username, COUNT(qu.Id) as Activity
+              FROM users us JOIN questions qu ON us.Id = qu.User
+              GROUP BY qu.User
+              ORDER BY COUNT(qu.Id) desc
+              LIMIT 0, 10");
+        $data->execute();
+        return $data->get_result()->fetch_all(MYSQL_ASSOC);
     }
 }

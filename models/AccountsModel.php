@@ -17,8 +17,8 @@ class AccountsModel extends BaseModel {
             return false;
         }
         $hash_password = password_hash($password, PASSWORD_BCRYPT);
-        $registerStatement = self::$db->prepare("
-            INSERT INTO users (Username, Password, Email, FullName, IsAdmin)
+        $registerStatement = self::$db->prepare(
+            "INSERT INTO users (Username, Password, Email, FullName, IsAdmin)
             VALUES (?, ?, ?, ?, 0)");
         $registerStatement->bind_param("ssss", $username, $hash_password,$email,$fullName);
         $registerStatement->execute();
