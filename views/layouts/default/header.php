@@ -2,8 +2,8 @@
 <html>
 <head>
     <title>Forum<?php if(isset($this->title)) echo ' - ' . htmlspecialchars($this->title) ?></title>
-    <link rel="stylesheet" type="text/css" href="/content/style.css"/>
     <link rel="stylesheet" type="text/css" href="/library/bootstrap/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/content/style.css"/>
     <meta charset="utf-8"/>
 </head>
 <body>

@@ -23,7 +23,7 @@
 
         <div class="form-group">
             <div class="col-lg-4 col-lg-offset-4">
-                <a class="btn btn-default" href="/questions">Cancel</a>
+                <a class="btn btn-default" href="/questions/view/<?= $this->questionId ?>">Cancel</a>
                 <input class="btn btn-primary" type="submit" value="Submit"/>
             </div>
         </div>

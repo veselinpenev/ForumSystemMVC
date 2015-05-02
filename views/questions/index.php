@@ -34,7 +34,7 @@
             <?php for($i=1; $i<= $this->maxPage; $i++) : ?>
                 <a href="/questions/index/<?= $i?>/<?= $this->pageSize ?>" class="btn btn-default"><?= $i ?></a>
             <?php endfor ?>
-            <?php if($this->page != $this->maxPage) : ?>
+            <?php if($this->page != $this->maxPage && $this->maxPage != 0) : ?>
                 <a href="/questions/index/<?= $this->page+1?>/<?= $this->pageSize ?>" class="btn btn-default">Next</a>
             <?php endif ?>
         </div>

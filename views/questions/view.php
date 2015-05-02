@@ -61,13 +61,13 @@
         </div>
 
         <div class="row text-center">
-            <?php if($this->page != 1) : ?>
+            <?php if($this->page != 1 ) : ?>
                 <a href="/questions/view/<?= $this->questionId?>/<?= $this->page-1?>/<?= $this->pageSize ?>" class="btn btn-default">Previous</a>
             <?php endif ?>
             <?php for($i=1; $i<= $this->maxPage; $i++) : ?>
                 <a href="/questions/view/<?= $this->questionId?>/<?= $i?>/<?= $this->pageSize ?>" class="btn btn-default"><?= $i ?></a>
             <?php endfor ?>
-            <?php if($this->page != $this->maxPage) : ?>
+            <?php if($this->page != $this->maxPage && $this->maxPage != 0) : ?>
                 <a href="/questions/view/<?= $this->questionId?>/<?= $this->page+1?>/<?= $this->pageSize ?>" class="btn btn-default">Next</a>
             <?php endif ?>
         </div>

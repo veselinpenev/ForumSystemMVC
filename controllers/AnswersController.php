@@ -14,6 +14,7 @@ class AnswersController extends BaseController {
     }
 
     public function add($questionId) {
+        $this->questionId = $questionId;
         if($this->isPost){
             $content = $_POST['content'];
             $authorName = $_POST['authorName'];
