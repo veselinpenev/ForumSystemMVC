@@ -3,7 +3,7 @@
 session_start();
 
 require_once('includes/config.php');
-
+require_once('library/password_hash.php');
 $requestParts = explode('/', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
 
 $controllerName = DEFAULT_CONTROLLER;

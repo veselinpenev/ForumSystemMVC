@@ -2,13 +2,12 @@
 
 class AnswersModel extends BaseModel {
     public function add($questionId, $content, $authorName, $authorEmail){
-               
-        $answerStatement = self::$db->prepare(
+        $query = sprintf(
             "INSERT INTO answers(Content, Date, Question, AuthorName, AuthorEmail)
-            VALUES (?, NOW(), ?, ?, ?)");
-        $answerStatement->bind_param("siss", $content, $questionId, $authorName, $authorEmail);
-        $answerStatement->execute();
-        $answerId = $answerStatement->insert_id;
+            VALUES ('%s', NOW(), %s, '%s', '%s')",
+            $content, $questionId, $authorName, $authorEmail);
+        $data = self::$db->query($query);
+        $answerId = self::$db->insert_id;
 
         if($answerId > 0){
             return true;

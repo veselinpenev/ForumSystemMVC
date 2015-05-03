@@ -18,20 +18,19 @@ class QuestionsModel extends BaseModel {
     }
 
     public function getMaxCount($category){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT COUNT(q.Id) as maxCount
             FROM questions q
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
-            WHERE c.Title LIKE ?
-            ORDER BY Date DESC");
-        $data->bind_param('s', $category);
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+            WHERE c.Title LIKE '%s'
+            ORDER BY Date DESC",
+            $category);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
-
     public function getAllWithPageAndCategory($from, $pageSize, $category){
-        $statement = self::$db->prepare(
+        $query = sprintf(
             "SELECT
                 q.Id,
                 q.Title,
@@ -43,36 +42,35 @@ class QuestionsModel extends BaseModel {
             FROM questions q
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
-            WHERE c.Title LIKE ?
+            WHERE c.Title LIKE '%s'
             ORDER BY Date DESC
-            LIMIT ?, ?");
-        $statement->bind_param('sii', $category,$from, $pageSize);
-        $statement->execute();
-        return $statement->get_result()->fetch_all(MYSQL_ASSOC);
+            LIMIT %s, %s",
+            $category,
+            $from,
+            $pageSize);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 
     public function getMaxCountAnswer($id){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT COUNT(a.Id) as maxCount
             FROM questions q
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
             left join answers a on a.Question = q.Id
-            where q.id = ?");
-        $data->bind_param('i', $id);
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+            where q.id = %s",
+            $id);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 
     public function getByIdWithAnswer($id, $from, $pageSize){
 
-        $updateStatement = self::$db->prepare(
-            "Update questions Set Counter = Counter + 1 Where Id = ?");
-        $updateStatement->bind_param("i", $id);
-        $updateStatement->execute();
+        $queryUpdate = sprintf("Update questions Set Counter = Counter + 1 Where Id = %s", $id);
+        $dataUpdate = self::$db->query($queryUpdate);
 
-
-        $questionStatement = self::$db->prepare(
+        $queryQuestion = sprintf(
             "SELECT
                 q.Id,
                 q.Title,
@@ -90,34 +88,34 @@ class QuestionsModel extends BaseModel {
             left join categories c on q.Category=c.Id
             left join users u on q.User=u.Id
             left join answers a on a.Question = q.Id
-            where q.id = ?
-            LIMIT ?, ?");
-        $questionStatement->bind_param("iii", $id, $from, $pageSize);
-        $questionStatement->execute();
-        $dataWithTags = $questionStatement->get_result()->fetch_all(MYSQL_ASSOC);
+            where q.id = %s
+            LIMIT %s, %s",
+            $id, $from, $pageSize);
+        $dataQuestion = self::$db->query($queryQuestion);
+        $dataWithTags = $this->process_results($dataQuestion);
 
-        $tagsStatement = self::$db->prepare(
+        $query = sprintf(
             "SELECT
                 group_concat(' ', t.Title) as Tags
             FROM questions q
             left join questions_tags qt on q.Id = qt.questionId
             left join tags t on qt.tagId = t.Id
-            where q.id = ?");
-        $tagsStatement->bind_param("i", $id);
-        $tagsStatement->execute();
-        $tagsFetch = $tagsStatement->get_result()->fetch_all(MYSQL_ASSOC);
-
+            where q.id = %s",
+            $id);
+        $data = self::$db->query($query);
+        $tagsFetch = $this->process_results($data);
         $dataWithTags[0]['Tags'] = $tagsFetch[0]['Tags'];
         return $dataWithTags;
 
     }
 
     public function getAllTagsAndCategories(){
+
         $categories = self::$db->query("SELECT * FROM categories");
-        $categoriesFetch = $categories->fetch_all(MYSQL_ASSOC);
+        $categoriesFetch = $this->process_results($categories);
 
         $tags = self::$db->query("SELECT * FROM tags");
-        $tagsFetch = $tags->fetch_all(MYSQL_ASSOC);
+        $tagsFetch = $this->process_results($tags);
 
         $union = array();
         $union['categories'] = $categoriesFetch;
@@ -128,26 +126,25 @@ class QuestionsModel extends BaseModel {
     }
 
     public function add($title, $content, $categoryId, $tags){
-        $userStatement = self::$db->prepare("SELECT Id FROM users WHERE username = ?");
-        $userStatement->bind_param("s", htmlspecialchars($_SESSION['username']));
-        $userStatement->execute();
-        $user = $userStatement->get_result()->fetch_all(MYSQL_ASSOC);
+        $queryUser = sprintf("SELECT Id FROM users WHERE username = '%s'", $_SESSION['username']);
+        $data = self::$db->query($queryUser);
+        $user = $this->process_results($data);
         $userId = $user[0]['Id'];
 
-        $questionStatement = self::$db->prepare(
+        $query = sprintf(
             "INSERT INTO questions (Title, Content, Date, Counter, Category, User)
-            VALUES (?, ?, NOW(), ? ,? ,?)");
-        $questionStatement->bind_param("ssiii", $title, $content, $c = 0, $categoryId, $userId);
-        $questionStatement->execute();
-        $questionId = $questionStatement->insert_id;
+            VALUES ('%s', '%s', NOW(), %s , %s, %s)",
+            $title, $content, 0, $categoryId, $userId);
+        $data = self::$db->query($query);
+        $questionId = self::$db->insert_id;
 
         if($questionId > 0){
             foreach ($tags as $tag) {
-                $questionStatement = self::$db->prepare(
+                $query = sprintf(
                     "INSERT INTO questions_tags (questionId, tagId)
-                    VALUES (?,?)");
-                $questionStatement->bind_param("ii", $questionId, $tag);
-                $questionStatement->execute();
+                    VALUES (%s, %s)",
+                    $questionId, $tag);
+                $data = self::$db->query($query);
             }
         }
         else{
@@ -158,55 +155,55 @@ class QuestionsModel extends BaseModel {
     }
 
     public function searchByQuestion($searchWord){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT
                 q.Id,
                 q.Title
             FROM questions q
-            WHERE q.Title LIKE ? OR q.Content LIKE ?
-            ORDER BY Date DESC");
-        $data->bind_param('ss', $searchWord, $searchWord);
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+            WHERE q.Title LIKE '%s' OR q.Content LIKE '%s'
+            ORDER BY Date DESC",
+            $searchWord, $searchWord);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 
     public function searchByAnswer($searchWord){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT
                 distinct q.Id,
                 q.Title
             FROM questions q
             JOIN answers a on a.Question = q.Id
-            WHERE a.Content LIKE ?
-            ORDER BY q.Date DESC");
-        $data->bind_param('s', $searchWord);
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+            WHERE a.Content LIKE '%s'
+            ORDER BY q.Date DESC",
+            $searchWord);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 
     public function searchByTag($searchWord){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT
                 distinct q.Id,
                 q.Title
             FROM questions q
             JOIN questions_tags qt on q.Id = qt.questionId
             JOIN tags t on qt.tagId = t.Id
-            WHERE t.Title LIKE ?
-            ORDER BY Date DESC");
-        $data->bind_param('s', $searchWord);
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+            WHERE t.Title LIKE '%s'
+            ORDER BY Date DESC",
+            $searchWord);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 
     public function ranking(){
-        $data = self::$db->prepare(
+        $query = sprintf(
             "SELECT Username, COUNT(qu.Id) as Activity
-              FROM users us JOIN questions qu ON us.Id = qu.User
+              FROM users us LEFT JOIN questions qu ON us.Id = qu.User
               GROUP BY qu.User
               ORDER BY COUNT(qu.Id) desc
               LIMIT 0, 10");
-        $data->execute();
-        return $data->get_result()->fetch_all(MYSQL_ASSOC);
+        $data = self::$db->query($query);
+        return $this->process_results($data);
     }
 }
