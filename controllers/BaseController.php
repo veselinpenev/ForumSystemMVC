@@ -12,6 +12,9 @@ class BaseController {
         if($_SERVER['REQUEST_METHOD'] === 'POST'){
             $this->isPost = true;
         }
+        if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == true){
+            $this->layoutName = "admin";
+        }
     }
 
     public function onInit(){
@@ -30,9 +33,17 @@ class BaseController {
             $this->isViewRendered = true;
         }
     }
+
     public function authorize() {
         if(!isset($_SESSION['username'])){
             $this->addErrorMessage("Please login first");
+            $this->redirect('accounts', 'login');
+        }
+    }
+
+    public function isAdmin() {
+        if(!isset($_SESSION['isAdmin'])){
+            $this->addErrorMessage("Please login as admin first");
             $this->redirect('accounts', 'login');
         }
     }

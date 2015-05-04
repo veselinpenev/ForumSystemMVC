@@ -1,16 +1,17 @@
 <?php
 
-class CategoriesController extends BaseController
-{
+class TagsController extends BaseController {
     private $db;
 
     public function onInit()
     {
-        $this->db = new CategoriesModel();
-        $this->title = "Categories";
+        $this->db = new TagsModel();
+        $this->title = "Tags";
     }
 
     public function index($page = 1, $pageSize = 5) {
+        $this->isAdmin();
+
         $this->page = $page;
         $this->pageSize = $pageSize;
         $page = $page-1;
@@ -29,7 +30,7 @@ class CategoriesController extends BaseController
         }
         $this->maxPage=$maxPage;
 
-        $this->categories = $this->db->getAllWithPage($from, $pageSize);
+        $this->tags = $this->db->getAllWithPage($from, $pageSize);
         $this->renderView();
     }
 
@@ -40,14 +41,14 @@ class CategoriesController extends BaseController
             $title = $_POST['title'];
             $isChange = $this->db->edit($id, $title);
             if($isChange){
-                $this->addSuccessMessage("Successful editing category with Id - $id");
-                $this->redirect('categories');
+                $this->addSuccessMessage("Successful editing tags with Id - $id");
+                $this->redirect('tags');
             } else {
                 $this->addErrorMessage("Editing failed");
             }
 
         } else {
-            $this->categoryInfo = $this->db->getInfo($id);
+            $this->tagsInfo = $this->db->getInfo($id);
             $this->renderView(__FUNCTION__);
         }
     }
@@ -59,8 +60,8 @@ class CategoriesController extends BaseController
             $title = $_POST['title'];
             $isChange = $this->db->add($title);
             if($isChange){
-                $this->addSuccessMessage("Successful adding category");
-                $this->redirect('categories');
+                $this->addSuccessMessage("Successful adding tags");
+                $this->redirect('tags');
             } else {
                 $this->addErrorMessage("Adding failed");
             }
@@ -71,18 +72,18 @@ class CategoriesController extends BaseController
 
     public function delete($id) {
         $this->isAdmin();
-
+        
         if($this->isPost){
             $isChange = $this->db->delete($id);
             if($isChange){
-                $this->addSuccessMessage("Successful adding category");
-                $this->redirect('categories');
+                $this->addSuccessMessage("Successful adding tags");
+                $this->redirect('tags');
             } else {
                 $this->addErrorMessage("Adding failed");
             }
 
         } else {
-            $this->categoryInfo = $this->db->getInfo($id);
+            $this->tagsInfo = $this->db->getInfo($id);
             $this->renderView(__FUNCTION__);
         }
     }

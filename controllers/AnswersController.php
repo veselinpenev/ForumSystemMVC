@@ -38,4 +38,40 @@ class AnswersController extends BaseController {
         }
         $this->renderView(__FUNCTION__);
     }
+
+    public function edit($answerId, $questionId) {
+        $this->isAdmin();
+
+        if($this->isPost){
+            $content = $_POST['content'];
+            $authorName = $_POST['authorName'];
+            $authorEmail = $_POST['authorEmail'];
+
+            $isChange = $this->db->edit($answerId, $content, $authorName, $authorEmail);
+            if($isChange){
+                $this->addSuccessMessage("Editing successful answer");
+                $this->redirectToUrl("/questions/view/$questionId");
+            } else{
+                $this->addErrorMessage('Editing failed');
+                $this->renderView(__FUNCTION__);
+            }
+        } else {
+            $this->answer = $this->db->getInfo($answerId);
+            $this->questionId = $questionId;
+            $this->renderView(__FUNCTION__);
+        }
+    }
+
+    public function delete($answerId, $questionId) {
+        $this->isAdmin();
+
+        $isDeleted = $this->db->delete($answerId);
+        if($isDeleted){
+            $this->addSuccessMessage('Successful deleted');
+            $this->redirectToUrl("/questions/view/$questionId");
+        } else{
+            $this->addErrorMessage('Delete failed');
+            $this->redirectToUrl("/questions/view/$questionId");
+        }
+    }
 }

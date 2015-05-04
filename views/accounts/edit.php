@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="form-group">
-                    <div class="col-lg-5 col-lg-offset-3">
+                    <div class="text-center">
                         <input class="btn btn-primary" type="submit" value="Update"/>
                         <a class="btn btn-default" href="/">Cancel</a>
                     </div>
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="form-group">
-                    <div class="col-lg-8 col-lg-offset-3">
+                    <div class="text-center">
                         <input class="btn btn-primary" type="submit" value="Change Password"/>
                         <a class="btn btn-default" href="/">Cancel</a>
                     </div>

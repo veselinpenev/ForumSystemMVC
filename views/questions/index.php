@@ -52,5 +52,9 @@
                 <a href="/questions/index/<?= $this->page+1?>/<?= $this->pageSize ?>/<?= $this->setCategory ?>" class="btn btn-default">Next</a>
             <?php endif ?>
         </div>
+
+        <?php if(sizeof($this->questions) == 0) :?>
+            <h3>No results.</h3>
+        <?php endif ?>
     </div>
 </div>

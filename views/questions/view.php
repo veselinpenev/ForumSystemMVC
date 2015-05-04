@@ -29,32 +29,47 @@
                         <div class="well top-buffer"> <?= htmlspecialchars($this->questionWithAnswers[0]['Content']) ?></div>
 
                     </div>
-                    <div class="col-md-2 col-md-offset-5">
+                    <div class="text-center">
                         <a href="/answers/add/<?= htmlspecialchars($this->questionWithAnswers[0]['Id']) ?>" class="btn btn-primary">Add Answer</a>
+                        <?php if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == true) : ?>
+                            <a href="/questions/edit/<?= htmlspecialchars($this->questionWithAnswers[0]['Id']) ?>" class="btn btn-warning">Edit</a>
+                            <a href="/questions/delete/<?= htmlspecialchars($this->questionWithAnswers[0]['Id']) ?>" class="btn btn-danger">Delete</a>
+                        <?php endif ?>
                     </div>
                 </div>
             </div>
             <?php if($this->questionWithAnswers[0]['AnswerContent'] != null):
                 foreach ($this->questionWithAnswers as $q) : ?>
-            <div class="panel panel-default col-md-10 col-md-offset-1">
-                <div class="panel-heading ">
-                    <span class="col-md-6">
-                        <span class="text-primary">Author: </span > <?= htmlspecialchars($q['AnswerAuthor']) ?>
-                        <?php
-                        if($q['AnswerAuthorEmail'] != null){
-                            $email =  htmlspecialchars($q['AnswerAuthorEmail']);
-                            echo "<span class='col-md-offset-1 text-primary'>Email: </span>$email";
-                        }
-                        ?>
-                    </span>
-                    <span class="col-md-3 text-right text-primary">Date: </span> <?= htmlspecialchars($q['AnswerDate']) ?>
-                </div>
+                    <div class="panel panel-default col-md-10 col-md-offset-1">
+                        <div class="panel-heading ">
+                            <span class="col-md-6">
+                                <span class="text-primary">Author: </span > <?= htmlspecialchars($q['AnswerAuthor']) ?>
+                                <?php
+                                if($q['AnswerAuthorEmail'] != null){
+                                    $email =  htmlspecialchars($q['AnswerAuthorEmail']);
+                                    echo "<span class='col-md-offset-1 text-primary'>Email: </span>$email";
+                                }
+                                ?>
+                            </span>
+                            <span class="col-md-3 text-right text-primary">Date: </span> <?= htmlspecialchars($q['AnswerDate']) ?>
+                        </div>
 
-                <div class="panel-body ">
-                    <?= htmlspecialchars($q['AnswerContent'])?>
-                </div>
-            </div>
-            <?php
+                        <div class="panel-body ">
+                            <div class="row">
+                                <?= htmlspecialchars($q['AnswerContent'])?>
+                            </div>
+                            <div class="text-right row ">
+                                <?php if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == true) : ?>
+                                    <a href="/answers/edit/<?= $q['AnswerId'] ?>/<?= $q['Id'] ?>" class="btn-sm btn-warning">Edit</a>
+                                    <a href="/answers/delete/<?= $q['AnswerId'] ?>/<?= $q['Id'] ?>" class="btn-sm btn-danger">Delete</a>
+                                <?php endif ?>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <?php
                 endforeach;
                 endif
             ?>

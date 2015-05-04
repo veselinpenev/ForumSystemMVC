@@ -40,6 +40,8 @@
                                 <li><a href="/">Home</a></li>
                                 <li><a href="/questions">Questions</a></li>
                                 <li><a href="/categories">Category</a></li>
+                                <li><a href="/tags">Tags</a></li>
+                                <li><a href="/accounts/all">Users</a></li>
                                 <?php if(isset($_SESSION['username'])) : ?>
                                     <li><a href="/accounts/edit" class="btn btn-primary"><?= htmlspecialchars($_SESSION['username']) ?></a></li>
                                     <li><a href="/accounts/logout">Logout</a></li>
@@ -57,7 +59,7 @@
         </div>
     </header>
 
-    <?php include('/views/layouts/messages.php'); ?>
+    <?php include_once('/views/layouts/messages.php'); ?>
 
     <main>
 

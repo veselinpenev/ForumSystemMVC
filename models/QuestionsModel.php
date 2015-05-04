@@ -25,7 +25,7 @@ class QuestionsModel extends BaseModel {
             left join users u on q.User=u.Id
             WHERE c.Title LIKE '%s'
             ORDER BY Date DESC",
-            $category);
+            addslashes($category));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
@@ -45,9 +45,9 @@ class QuestionsModel extends BaseModel {
             WHERE c.Title LIKE '%s'
             ORDER BY Date DESC
             LIMIT %s, %s",
-            $category,
-            $from,
-            $pageSize);
+            addslashes($category),
+            addslashes($from),
+            addslashes($pageSize));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
@@ -60,7 +60,7 @@ class QuestionsModel extends BaseModel {
             left join users u on q.User=u.Id
             left join answers a on a.Question = q.Id
             where q.id = %s",
-            $id);
+            addslashes($id));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
@@ -79,6 +79,7 @@ class QuestionsModel extends BaseModel {
                 q.Content,
                 c.Title as Category,
                 u.Username,
+                a.Id as AnswerId,
                 a.Content as AnswerContent,
                 a.Date as AnswerDate,
                 a.AuthorName as AnswerAuthor,
@@ -90,7 +91,7 @@ class QuestionsModel extends BaseModel {
             left join answers a on a.Question = q.Id
             where q.id = %s
             LIMIT %s, %s",
-            $id, $from, $pageSize);
+            addslashes($id), addslashes($from), addslashes($pageSize));
         $dataQuestion = self::$db->query($queryQuestion);
         $dataWithTags = $this->process_results($dataQuestion);
 
@@ -101,12 +102,24 @@ class QuestionsModel extends BaseModel {
             left join questions_tags qt on q.Id = qt.questionId
             left join tags t on qt.tagId = t.Id
             where q.id = %s",
-            $id);
+            addslashes($id));
         $data = self::$db->query($query);
         $tagsFetch = $this->process_results($data);
         $dataWithTags[0]['Tags'] = $tagsFetch[0]['Tags'];
         return $dataWithTags;
 
+    }
+
+    public function getAllByUserId($id){
+
+        $queryQuestion = sprintf(
+            "SELECT
+                q.Id
+            FROM questions q
+            where q.User = %s",
+            addslashes($id));
+        $dataQuestion = self::$db->query($queryQuestion);
+        return $this->process_results($dataQuestion);
     }
 
     public function getAllTagsAndCategories(){
@@ -134,7 +147,7 @@ class QuestionsModel extends BaseModel {
         $query = sprintf(
             "INSERT INTO questions (Title, Content, Date, Counter, Category, User)
             VALUES ('%s', '%s', NOW(), %s , %s, %s)",
-            $title, $content, 0, $categoryId, $userId);
+            addslashes($title), addslashes($content), 0, addslashes($categoryId), addslashes($userId));
         $data = self::$db->query($query);
         $questionId = self::$db->insert_id;
 
@@ -143,7 +156,7 @@ class QuestionsModel extends BaseModel {
                 $query = sprintf(
                     "INSERT INTO questions_tags (questionId, tagId)
                     VALUES (%s, %s)",
-                    $questionId, $tag);
+                    addslashes($questionId), addslashes($tag));
                 $data = self::$db->query($query);
             }
         }
@@ -154,6 +167,67 @@ class QuestionsModel extends BaseModel {
         return $questionId;
     }
 
+    public function getInfo($id){
+        $query = sprintf(
+            "SELECT q.Title as Title, q.Content as Content, c.Title as Category
+            FROM questions q JOIN categories c ON q.Category = c.Id WHERE q.Id = %s",
+            addslashes($id));
+        $data = self::$db->query($query);
+        $result = $this->process_results($data);
+
+        $queryTags = sprintf(
+            "SELECT t.Title
+            FROM questions q
+            JOIN questions_tags qt ON q.Id = qt.questionId
+            JOIN tags t ON qt.tagId = t.Id
+            WHERE q.Id = %s",
+            addslashes($id));
+        $dataTags = self::$db->query($queryTags);
+        $tags = $this->process_results($dataTags);
+        $tagsArr = array();
+        foreach ($tags as $t){
+            $tagsArr[] = $t['Title'];
+        }
+        $result[0]['Tags'] = $tagsArr;
+        return $result[0];
+    }
+
+    public function edit($id, $title, $content, $categoryId, $tags){
+        $query = sprintf("UPDATE questions SET Title= '%s', Content = '%s', Category = %s WHERE Id = %s",
+            addslashes($title), addslashes($content), addslashes($categoryId), addslashes($id));
+        $data = self::$db->query($query);
+        if($data){
+            $queryDelete = sprintf("DELETE FROM questions_tags WHERE questionId = %s",
+                addslashes($id));
+            self::$db->query($queryDelete);
+            foreach ($tags as $tag) {
+                $query = sprintf(
+                    "INSERT INTO questions_tags (questionId, tagId)
+                    VALUES (%s, %s)",
+                    addslashes($id), addslashes($tag));
+                $data = self::$db->query($query);
+            }
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function delete($id){
+        $queryDeleteReferenceTags = sprintf("DELETE FROM questions_tags WHERE questionId = %s",
+            addslashes($id));
+        self::$db->query($queryDeleteReferenceTags);
+        $queryDeleteAnswer = sprintf("DELETE FROM answers WHERE Question = %s",
+            addslashes($id));
+        self::$db->query($queryDeleteAnswer);
+        $query = sprintf(
+            "DELETE FROM questions WHERE Id = %s",
+            addslashes($id));
+        $data = self::$db->query($query);
+        return $data;
+    }
+
     public function searchByQuestion($searchWord){
         $query = sprintf(
             "SELECT
@@ -162,7 +236,7 @@ class QuestionsModel extends BaseModel {
             FROM questions q
             WHERE q.Title LIKE '%s' OR q.Content LIKE '%s'
             ORDER BY Date DESC",
-            $searchWord, $searchWord);
+            addslashes($searchWord), addslashes($searchWord));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
@@ -176,7 +250,7 @@ class QuestionsModel extends BaseModel {
             JOIN answers a on a.Question = q.Id
             WHERE a.Content LIKE '%s'
             ORDER BY q.Date DESC",
-            $searchWord);
+            addslashes($searchWord));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
@@ -191,7 +265,7 @@ class QuestionsModel extends BaseModel {
             JOIN tags t on qt.tagId = t.Id
             WHERE t.Title LIKE '%s'
             ORDER BY Date DESC",
-            $searchWord);
+            addslashes($searchWord));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }

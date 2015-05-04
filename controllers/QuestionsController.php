@@ -67,8 +67,6 @@ class QuestionsController extends BaseController{
         $this->renderView(__FUNCTION__);
     }
 
-
-
     public function add() {
         $this->authorize();
 
@@ -88,6 +86,43 @@ class QuestionsController extends BaseController{
         } else {
             $this->TagsAndCategories = $this->db->getAllTagsAndCategories();
             $this->renderView(__FUNCTION__);
+        }
+    }
+
+    public function edit($id) {
+        $this->isAdmin();
+
+        if($this->isPost){
+            $title = $_POST['title'];
+            $content = $_POST['content'];
+            $categoryId = $_POST['selectCategory'];
+            $tags = $_POST['check_tags'];
+
+            $isChange = $questionId = $this->db->edit($id, $title, $content, $categoryId, $tags);
+            if($isChange){
+                $this->addSuccessMessage("Editing successful question");
+                $this->redirectToUrl("/questions/view/$id");
+            } else{
+                $this->addErrorMessage('Editing failed');
+                $this->renderView(__FUNCTION__);
+            }
+        } else {
+            $this->TagsAndCategories = $this->db->getAllTagsAndCategories();
+            $this->questionInfo = $this->db->getInfo($id);
+            $this->renderView(__FUNCTION__);
+        }
+    }
+
+    public function delete($id) {
+        $this->isAdmin();
+
+        $isDeleted = $this->db->delete($id);
+        if($isDeleted){
+            $this->addSuccessMessage('Successful deleted');
+            $this->redirect('questions');
+        } else{
+            $this->addErrorMessage('Delete failed');
+            $this->redirectToUrl("/questions/view/$id");
         }
     }
 

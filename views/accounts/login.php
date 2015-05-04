@@ -17,7 +17,7 @@
         </div>
 
         <div class="form-group">
-            <div class="col-lg-6 col-lg-offset-3">
+            <div class="text-center">
                 <input class="btn btn-primary" type="submit" value="Login"/>
                 <a class="btn btn-default" href="/accounts/register">Register</a>
                 <a class="btn btn-default" href="/">Cancel</a>

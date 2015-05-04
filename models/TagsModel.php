@@ -1,26 +1,21 @@
 <?php
 
-class CategoriesModel extends BaseModel {
-
-    public function getAll() {
-        $data = self::$db->query("SELECT * FROM categories ORDER BY Id");
-        return $this->process_results($data);
-    }
+class TagsModel extends BaseModel {
 
     public function getMaxCount(){
-        $data = self::$db->query("SELECT COUNT(Id) as maxCount FROM categories ");
+        $data = self::$db->query("SELECT COUNT(Id) as maxCount FROM tags ");
         return $this->process_results($data);
     }
 
     public function getAllWithPage($from, $pageSize){
-        $query = sprintf("SELECT * FROM categories ORDER BY Id LIMIT %s, %s",
+        $query = sprintf("SELECT * FROM tags ORDER BY Id LIMIT %s, %s",
             addslashes($from), addslashes($pageSize));
         $data = self::$db->query($query);
         return $this->process_results($data);
     }
 
     public function getInfo($id){
-        $query = sprintf("SELECT * FROM categories WHERE Id = %s",
+        $query = sprintf("SELECT * FROM tags WHERE Id = %s",
             addslashes($id));
         $data = self::$db->query($query);
         $result = $this->process_results($data);
@@ -29,7 +24,7 @@ class CategoriesModel extends BaseModel {
 
     public function add($title){
         $query = sprintf(
-            "INSERT INTO categories (Title) VALUES ('%s')",
+            "INSERT INTO tags (Title) VALUES ('%s')",
             addslashes($title));
         $data = self::$db->query($query);
         $isChange = self::$db->insert_id;
@@ -41,7 +36,7 @@ class CategoriesModel extends BaseModel {
     }
 
     public function edit($id ,$title){
-        $query = sprintf("UPDATE categories SET Title= '%s' WHERE Id = %s",
+        $query = sprintf("UPDATE tags SET Title= '%s' WHERE Id = %s",
             addslashes($title), addslashes($id));
         $data = self::$db->query($query);
         $isChange = self::$db->affected_rows;
@@ -54,7 +49,7 @@ class CategoriesModel extends BaseModel {
 
     public function delete($id){
         $query = sprintf(
-            "DELETE FROM categories WHERE Id = %s",
+            "DELETE FROM tags WHERE Id = %s",
             addslashes($id));
         $data = self::$db->query($query);
         $isChange = self::$db->affected_rows;
