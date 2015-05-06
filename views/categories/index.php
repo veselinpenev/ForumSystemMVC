@@ -2,9 +2,11 @@
     <div class="col-md-6 col-md-offset-3 well">
         <div class="row">
             <h1 class="col-md-3"><?= htmlspecialchars($this->title) ?></h1>
+            <?php if(isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] == true) :  ?>
             <div class="col-md-3 col-md-offset-6">
                 <a href="/categories/add" class="btn btn-primary">Add Category</a>
             </div>
+            <?php endif ?>
         </div>
 
         <table class="table table-striped table-hover">

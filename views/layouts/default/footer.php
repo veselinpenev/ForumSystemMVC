@@ -11,5 +11,6 @@
     <script src="/library/jquery.noty.packaged.min.js"></script>
     <script src="/library/bootstrap/bootstrap.min.js"></script>
     <script src="/library/bootstrap/bootstrap.min.js"></script>
+    <script src="/content/js.js"></script>
 </body>
 </html>

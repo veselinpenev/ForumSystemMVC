@@ -115,7 +115,7 @@ class AccountsModel extends BaseModel {
         foreach ($allQuestion as $question) {
             $questionModel->delete($question['Id']);
         }
-        
+
         $query = sprintf(
             "DELETE FROM users WHERE Id = %s",
             addslashes($id));

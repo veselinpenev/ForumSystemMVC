@@ -1,5 +1,8 @@
+<IfModule mod_env.c>
+        SetEnv PHPRC /home/vpenevcl/php.ini
+</IfModule>
+
 <IfModule mod_rewrite.c>
-  SetEnv PHPRC /home/CPANEL_NAME/php.ini
   RewriteEngine On
   RewriteCond %{REQUEST_URI} !^/content/.*$
   RewriteCond %{REQUEST_URI} !^/library/.*$

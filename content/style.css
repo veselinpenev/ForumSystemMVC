@@ -46,3 +46,7 @@ body main img {
 .searchBtnMargin{
     margin:5px;
 }
+
+#perPage{
+    width: 30px;
+}

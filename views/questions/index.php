@@ -40,6 +40,10 @@
                 </div>
             <?php endforeach ?>
         </div>
+        <div class="row text-right">
+            <label for="perPage">per page: </label>
+            <input onchange="changePageSize()" id="perPage" type="text" value="<?= $this->pageSize ?>"/>
+        </div>
 
         <div class="row text-center">
             <?php if($this->page != 1) : ?>
