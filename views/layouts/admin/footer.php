@@ -8,7 +8,6 @@
     </div>
 
     <script src="/library/jquery-2.1.1.js"></script>
-    <script src="/library/jquery.noty.packaged.min.js"></script>
     <script src="/library/bootstrap/bootstrap.min.js"></script>
     <script src="/library/bootstrap/bootstrap.min.js"></script>
     <script src="/content/js.js"></script>
