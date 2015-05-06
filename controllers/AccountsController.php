@@ -147,8 +147,14 @@ class AccountsController extends BaseController {
             $username = $_POST['username'];
             $fullName = $_POST['fullName'];
             $email = $_POST['email'];
+            $isAdmin = 0;
+            if(isset($_POST['isAdmin'])){
+                if($_POST['isAdmin'] == 1){
+                    $isAdmin = 1;
+                }
+            }
 
-            $isChanged = $this->db->editProfile($username, $fullName, $email);
+            $isChanged = $this->db->editProfile($username, $fullName, $email, $isAdmin);
             if ($isChanged) {
                 $this->addSuccessMessage('Successful edit profile');
                 $this->redirect('accounts', 'all');

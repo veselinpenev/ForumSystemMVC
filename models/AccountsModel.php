@@ -41,9 +41,9 @@ class AccountsModel extends BaseModel {
         return false;
     }
 
-    public function editProfile($username, $fullName, $email){
-        $query = sprintf("UPDATE users SET FullName= '%s', Email = '%s' WHERE Username = '%s'",
-            addslashes($fullName), addslashes($email), addslashes($username));
+    public function editProfile($username, $fullName, $email, $isAdmin = 0){
+        $query = sprintf("UPDATE users SET FullName= '%s', Email = '%s', IsAdmin = %s WHERE Username = '%s'",
+            addslashes($fullName), addslashes($email), $isAdmin, addslashes($username));
         $data = self::$db->query($query);
         $result = self::$db->affected_rows;
         if($result > 0){
@@ -85,7 +85,7 @@ class AccountsModel extends BaseModel {
     }
 
     public function getInfoById($id){
-        $query = sprintf("Select Id, Username, Email, FullName from users WHERE Id =  '%s'",
+        $query = sprintf("Select Id, Username, Email, FullName, IsAdmin from users WHERE Id =  '%s'",
             addslashes($id));
         $data = self::$db->query($query);
         $result = $this->process_results($data);

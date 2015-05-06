@@ -26,6 +26,23 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="col-lg-3 control-label"></label>
+                    <div class="col-lg-9">
+                        <div class="checkbox">
+                            <?php if($this->userInfo['IsAdmin']) : ?>
+                                <label>
+                                    <input type="checkbox" name="isAdmin" value="1" checked> Admin
+                                </label>
+                            <?php else : ?>
+                                <label>
+                                    <input type="checkbox" name="isAdmin"  value="1"> Admin
+                                </label>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <div class="text-center">
                         <input class="btn btn-primary" type="submit" value="Update"/>
                         <a class="btn btn-default" href="/accounts/all">Cancel</a>
